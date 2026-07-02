@@ -307,6 +307,18 @@ const ROSTER=[
     face:{ skin:'#e7b48c',hair:'#5a3f26',beard:'#5a3f26',beardStyle:'full',hat:'cap-back',hatColor:'#2a3d6b',glasses:null,shirt:'#2b6fb0',cheeks:true },
     barks:["Cannon leg!","The Great Wall holds.","8 shells, 5 seconds.","Cool Hand Luke."],
     joinLine:"Found welding a car door onto another car door. \"It's armor now.\"" },
+  { id:'jeff', name:'JEFF HAY', full:'Jeff Hay', nick:'The Heavyweight', color:'#8a5ad6',
+    hp:170, speed:2.8, atk:19, reach:50, atkCd:19,
+    special:{ name:'SKOL SLAM', key:'slam', desc:'A finishing-move body slam — massive AoE damage and knockback. IT\'S STILL REAL TO HIM.' },
+    face:{ skin:'#e6b294',hair:'#8a6a44',beard:'#8a6a44',beardStyle:'stubble',hat:'beanie',hatColor:'#2a2140',glasses:null,shirt:'#4F2683',cheeks:true },
+    barks:["SKOL!","IT'S STILL REAL TO ME!","Suplex city, baby.","1249, let's ride.","Tap or snap."],
+    joinLine:"Found suplexing a zombie through a folding table. The crowd (nobody) went wild." },
+  { id:'bryce', name:'BRYCE', full:'Bryce', nick:'The 12th Man', color:'#9e2a3a',
+    hp:125, speed:3.6, atk:14, reach:50, atkCd:13,
+    special:{ name:"GIG 'EM RALLY", key:'rally', desc:'Rallies the whole crew — everyone hits harder while the 12th Man spirit holds.' },
+    face:{ skin:'#e8b389',hair:'#9c6a34',beard:'#b0622a',beardStyle:'full',hat:'cap-back',hatColor:'#500000',glasses:null,shirt:'#500000',cheeks:true },
+    barks:["GIG 'EM!","Whoop!","t.u. still sucks.","Saw 'em off!","BTHO undead."],
+    joinLine:"Found holding the 12th Man stance alone in a parking lot, ready to be called in. He has been ready for years." },
   { id:'ryedawg', name:'RYEDAWG', full:'Ryan Clinton Hagelstein', nick:'Ryebread', color:'#c45ad6',
     hp:90, speed:4.1, atk:11, reach:44, atkCd:11,
     special:{ name:'QUASAR CANNON', key:'quasar', desc:'The LAS-99. Screen-long piercing beam, supreme accuracy.' },
@@ -345,13 +357,13 @@ const STOPS=[
     flavor:'Roll Tide. The stadium is full. Nobody in it is alive.' },
   { name:'MERIDIAN, MS',   short:'MER',  gas:5, mission:null, recruit:true,
     flavor:'Waffle House sign still lit. God bless that company.' },
-  { name:'JACKSON, MS',    short:'JAX',  gas:5, mission:{type:'siege',time:40,tier:1,arena:'station'},
+  { name:'JACKSON, MS',    short:'JAX',  gas:5, mission:{type:'siege',time:40,tier:1,arena:'station'}, recruit:true,
     flavor:'The horde heard y\'all pull in. Hold the gas station.' },
   { name:'SHREVEPORT, LA', short:'SHV',  gas:6, mission:{type:'scavenge',quota:8,tier:2,arena:'town'}, recruit:true,
     flavor:'A casino billboard promises LOOSE SLOTS. The slots are not the loose thing here.' },
-  { name:'TYLER, TX',      short:'TYL',  gas:6, mission:{type:'siege',time:50,tier:3,arena:'field'},
+  { name:'TYLER, TX',      short:'TYL',  gas:6, mission:{type:'siege',time:50,tier:3,arena:'field'}, recruit:true,
     flavor:'Rose capital of America. They\'re fertilizing the roses differently now.' },
-  { name:'DALLAS, TX',     short:'DAL',  gas:6, mission:{type:'boss',tier:3,arena:'city',boss:'BIG TEX'},
+  { name:'DALLAS, TX',     short:'DAL',  gas:6, mission:{type:'boss',tier:3,arena:'city',boss:'BIG TEX'}, recruit:true,
     flavor:'Something enormous is stomping around the fairgrounds. Howdy, folks.' },
   { name:'ABILENE, TX',    short:'ABI',  gas:7, mission:{type:'siege',time:60,tier:4,arena:'town',home:true}, recruit:true,
     flavor:'HOMETOWN. Cooper High parking lot. This one\'s personal.' },
@@ -433,6 +445,14 @@ const EVENTS=[
     choices:[
       { label:'Let the man hunt', sub:'+food', act:()=>{ run.food+=9; return 'Forty minutes later he returns carrying dinner and says nothing. Legend behavior. (+9 food)'; } },
       { label:'We don\'t have time', sub:'', act:()=>{ run.score+=10; return 'He watches the field recede like a sailor watching the shore. "Point 45," he whispers. (+10 score)'; } } ] },
+  { id:'ev_jeff', req:()=>inParty('jeff'), title:'JEFF FINDS A FOLDING TABLE', text:'Leaning against a dead Waffle House: one (1) pristine folding table. Jeff cracks his neck. "Some things are sacred."',
+    choices:[
+      { label:'Let him have this', sub:'a zombie goes through it', act:()=>{ run.score+=60; const m=run.party.find(m=>m.ch.id==='jeff'); if(m)m.meter=SPECIAL_COST; return 'A wandering walker is put through the table from the TOP ROPE (the van roof). Jeff\'s meter is FULL. The table did not survive. (+60 score)'; } },
+      { label:'"We don\'t have time"', sub:'you monster', act:()=>{ hurtAll(2); return 'Jeff stares out the window for 100 miles. The silence physically hurts. (-2 HP all, somehow)'; } } ] },
+  { id:'ev_bryce', req:()=>inParty('bryce'), title:'BRYCE SPOTS A T.U. BUMPER STICKER', text:'An abandoned Tahoe wears a burnt-orange bumper sticker. Bryce\'s eye twitches. "Pull over. Pull. Over."',
+    choices:[
+      { label:'Let him scrape it off', sub:'this cannot stand', act:()=>{ run.score+=40; return 'Ten solemn minutes with a putty knife. He replaces it with "GIG \'EM" written in sharpie. Order is restored. (+40 score)'; } },
+      { label:'Keep driving', sub:'it\'s the apocalypse, man', act:()=>{ run.gas+=1; const m=run.party.find(m=>m.ch.id==='bryce'); if(m)m.hp=clamp(m.hp-5,1,m.maxhp); return 'Bryce takes 5 psychic damage but you make good time. (+1 gas, Bryce -5 HP)'; } } ] },
   { id:'ev_nixon', req:()=>inParty('nixon'), title:'NIXON AUDITS THE SUPPLIES', text:'Michael has built a spreadsheet. In the apocalypse. It has conditional formatting. "Guys, we have inefficiencies."',
     choices:[
       { label:'Deploy Six Sigma', sub:'+supplies via synergy', act:()=>{ run.food+=3; run.gas+=3; run.med+=1; return 'Somehow the same pile of stuff is now MORE stuff. Lean methodology is real?? (+3 food, +3 gas, +1 medkit)'; } },
@@ -470,9 +490,14 @@ function drawFace(g,x,y,R,f,hurt){ g.save(); g.translate(x,y); const skin=hurt?'
   g.fillStyle='#2a2018'; g.beginPath(); g.arc(-R*0.34,-R*0.08,R*0.075,0,6.28); g.fill(); g.beginPath(); g.arc(R*0.4,-R*0.08,R*0.075,0,6.28); g.fill();
   g.strokeStyle='rgba(0,0,0,.22)'; g.lineWidth=Math.max(1,R*0.07); g.lineJoin='round'; g.beginPath(); g.moveTo(0,-R*0.02); g.lineTo(-R*0.07,R*0.16); g.lineTo(R*0.07,R*0.16); g.stroke();
   g.fillStyle='#fff'; g.beginPath(); g.ellipse(0,R*0.4,R*0.33,R*0.2,0,0,Math.PI); g.fill(); g.strokeStyle='rgba(0,0,0,.3)'; g.lineWidth=Math.max(1,R*0.05); g.stroke();
-  if(f.hat==='cap-back')capBack(g,R,f.hatColor); else if(f.hat==='headband')headband(g,R,f.hatColor,f.hatColor2);
+  if(f.hat==='cap-back')capBack(g,R,f.hatColor); else if(f.hat==='headband')headband(g,R,f.hatColor,f.hatColor2); else if(f.hat==='beanie')beanie(g,R,f.hatColor);
   if(f.glasses==='forehead')foreShades(g,R);
   g.restore(); }
+function beanie(g,R,col){ col=col||'#2a2140';
+  g.save(); g.beginPath(); g.arc(0,0,R,0,6.28); g.clip(); g.fillStyle=col; g.fillRect(-R,-R*1.2,R*2,R*0.86); g.restore();
+  g.fillStyle=col; g.beginPath(); g.arc(0,-R*0.34,R*0.96,Math.PI,Math.PI*2); g.closePath(); g.fill();
+  g.save(); g.beginPath(); g.arc(0,0,R,0,6.28); g.clip();
+  g.fillStyle='rgba(255,255,255,.14)'; g.fillRect(-R,-R*0.5,R*2,R*0.14); g.restore(); }
 function capBack(g,R,col){ col=col||'#181818'; g.save(); g.beginPath(); g.arc(0,0,R,0,6.28); g.clip(); g.fillStyle=col; g.fillRect(-R,-R*1.2,R*2,R*0.82); g.restore();
   g.fillStyle=col; g.beginPath(); g.arc(0,-R*0.3,R*0.98,Math.PI,Math.PI*2); g.closePath(); g.fill(); g.fillRect(-R*0.2,-R*1.18,R*0.4,R*0.16);
   g.save(); g.beginPath(); g.arc(0,0,R,0,6.28); g.clip(); g.fillStyle='rgba(255,255,255,.22)'; for(let i=-2;i<=2;i++){ g.beginPath(); g.arc(i*R*0.26,-R*0.42,R*0.035,0,6.28); g.fill(); } g.restore(); }
@@ -740,6 +765,10 @@ function doSpecial(f){
     projectiles.push({x:f.x,y:f.y,vx:Math.cos(f.face+sp)*13,vy:Math.sin(f.face+sp)*13,dmg:fAtk(f)*1.6,life:26,r:4,col:'#ffd27b',pierce:1,hit:[],fromPlayer:f.isPlayer,friendly:true}); } }
   else if(k==='quasar'){ projectiles.push({x:f.x,y:f.y,vx:Math.cos(f.face)*20,vy:Math.sin(f.face)*20,dmg:fAtk(f)*9,life:45,r:12,col:'#c45ad6',pierce:99,hit:[],beam:true,fromPlayer:f.isPlayer,friendly:true}); flash(); }
   else if(k==='shell'){ f.shellT=300; f.buffT=300; popup(f.x,f.y-f.r-28,'TURTLE UP!','#2fa6c8',14); }
+  else if(k==='slam'){ for(const z of targets){ if(hyp(z.x-f.x,z.y-f.y)<210){ const a=Math.atan2(z.y-f.y,z.x-f.x);
+      hurtEnemy(z,fAtk(f)*3.5,a,42,f.isPlayer); z.stun=Math.max(z.stun,24); } }
+    shake=18; flash(); popup(f.x,f.y-f.r-28,'SKOL!','#ffd24a',16); }
+  else if(k==='rally'){ for(const o of alive()){ o.buffT=360; ring(o.x,o.y,'#9e2a3a'); popup(o.x,o.y-o.r-24,"GIG 'EM!",'#ffb0ba',13); } }
   else if(k==='deadlift'){ for(const z of targets){ if(hyp(z.x-f.x,z.y-f.y)<160){ const a=Math.atan2(z.y-f.y,z.x-f.x); hurtEnemy(z,fAtk(f)*4,a,36,f.isPlayer); z.stun=Math.max(z.stun,30); } } shake=16; flash(); }
 }
 function hitFighter(f,dmg,ang){
@@ -1055,7 +1084,7 @@ function buildCards(){
   ROSTER.forEach(c=>{ const card=document.createElement('div'); card.className='card'; card.style.setProperty('--ac',c.color); card.dataset.id=c.id;
     const stat=(k,v)=>`<span>${k}</span><span class="bar"><i style="width:${v*100}%"></i></span>`;
     card.innerHTML=`<div class="picktag"></div><canvas class="avatar" width="120" height="120"></canvas><h3>${c.name}</h3><div class="nick">“${c.nick}”</div>
-      <div class="stats">${stat('Pow',Math.min(1,c.atk/20))}${stat('Spd',Math.min(1,c.speed/4.2))}${stat('HP',Math.min(1,c.hp/165))}</div>
+      <div class="stats">${stat('Pow',Math.min(1,c.atk/20))}${stat('Spd',Math.min(1,c.speed/4.2))}${stat('HP',Math.min(1,c.hp/170))}</div>
       <div class="sp"><b>${c.special.name}</b><br>${c.special.desc}</div>`;
     tapify(card,()=>{ audioInit(); tapCard(c.id); });
     wrap.appendChild(card);

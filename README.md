@@ -30,12 +30,14 @@ Single self-contained HTML file, mobile-first.
 Downed crew get revived by teammates standing close. Whole crew down = run over.
 Weapons (bat, cast iron, machete, chainsaw, guitar) drop from crates and events — they break with use.
 
-## The crew (from the official team slides)
+## The crew
 | Fighter | Nickname | Special | Road event |
 |---------|----------|---------|-----------|
 | **Coyt Hagelstein** | The Coyster | **AUTOFLATULENCE** — stun cloud | Rolls the windows up |
 | **Ryan Harp** | Fishstick | **POSTER DUNK** — crater slam | Finds a flight sim |
 | **Luke Weems** | Greasy Luke | **FAST DRAW** — shotgun cone | Welds armor onto the van |
+| **Jeff Hay** | The Heavyweight | **SKOL SLAM** — table-match AoE slam | Finds a folding table |
+| **Bryce** | The 12th Man | **GIG 'EM RALLY** — whole-crew damage buff | Spots a t.u. bumper sticker |
 | **Ryan Hagelstein** | Ryedawg | **QUASAR CANNON** — LAS-99 beam | Starts a story (it never ends) |
 | **Harrison Heger** | Turtle Man | **TURTLE SHELL** — soak & reflect | Spots game (point 45) |
 | **Michael Nixon** | Nix | **DEADLIFT SLAM** — hoist & slam | Audits the supplies |
