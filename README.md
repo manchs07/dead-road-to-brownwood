@@ -1,71 +1,52 @@
-# Dead Road to Brownwood
+# Dead Road to Ovalo
 
-A 2D top-down zombie-survival road trip — Jacksonville, FL all the way to Lake Brownwood, TX.
-Inspired by *Death Road to Canada*. Single self-contained HTML file, no install, no internet.
+A *Death Road to Canada*-style zombie road-trip game: **Birmingham, AL → Ovalo, TX.**
+Drive west, manage food/gas/medkits, make terrible choices at roadside events, brawl
+through scavenge runs and sieges, and pick up the rest of the crew along the way.
+Single self-contained HTML file, mobile-first.
 
 ## Play
-Double-click **`index.html`** — it opens in any browser. To share with friends, just send them that one file.
+- **Phone / tablet:** open the link in Safari/Chrome → on-screen thumb-stick + buttons.
+  Tap **Share → Add to Home Screen** to install it full-screen like an app.
+- **Desktop:** double-click `index.html` and use the keyboard.
 
 ## Controls
-- **WASD / Arrows** — move (your survivor auto-fires at the nearest zombie)
-- **Space** (or Shift) — special ability
-- **P** — pause · **M** — mute
+**Touch:** left thumb = move · **HIT** (mash for combos) · **SP** = special (when meter's full) · **DASH** = dodge with i-frames.
+**Keyboard:** `WASD` move · `J`/`Space` hit · `K` special · `L` dash · `P` pause · `M` mute.
 
-Survive the drive west. Killing zombies and staying alive fills the route bar at the top.
-Reach Lake Brownwood to win.
+## The loop
+1. **Pick two** — a Leader (★) and a Co-Pilot. Everyone else is stranded on the road ahead.
+2. **Drive west** on the map. Every leg burns gas and food (starve = the crew suffers).
+3. **Road events** — Buc-ee's jackpots, gas-station sushi, snake farms, tornadoes,
+   Longhorns fans, a grandma with casserole. Choices have consequences.
+4. **Missions on foot**:
+   - **SCAVENGE** — smash crates, grab 🍗⛽✚, get back to the van
+   - **HOLD OUT** — survive the siege timer, then mop up
+   - **BOSS** — BIG TEX stomps the Dallas fairgrounds; KING RATTLER guards Ovalo
+   - **FUEL RUN** — drive on an empty tank and you'll be siphoning under fire
+5. **Recruit the crew** — stranded friends join at Meridian, Shreveport, and Abilene (van seats 4; latecomers donate supplies).
+6. **Abilene** = hometown siege. **Ovalo** = final boss. Porch = victory.
 
-## Rescue your friends along the road
-You pick **one** survivor to drive. The other three are stranded out west — a glowing
-beacon and a **HELP! 👋** sign mark each one, with an arrow at the screen edge pointing the
-way. Walk into them to pull them into the convoy. Recruited friends trail behind you,
-auto-fire at zombies, and have their own health bar (shown in the **CREW** roster, top-left).
-If a friend gets swarmed, they go down — with a parting one-liner. Everyone you deliver to
-the lake counts on the win screen. Yes, you can even rescue Michael (good luck killing him).
+Downed crew get revived by teammates standing close. Whole crew down = run over.
+Weapons (bat, cast iron, machete, chainsaw, guitar) drop from crates and events — they break with use.
 
-Each survivor is a hand-drawn caricature built from their real photo — backwards cap + beard
-for Bryce, Spartan headband for Jeff, aviator shades for Ryan, dad-shades-on-the-forehead for
-Michael — plus random in-character trash talk while you drive.
+## The crew (from the official team slides)
+| Fighter | Nickname | Special | Road event |
+|---------|----------|---------|-----------|
+| **Coyt Hagelstein** | The Coyster | **AUTOFLATULENCE** — stun cloud | Rolls the windows up |
+| **Ryan Harp** | Fishstick | **POSTER DUNK** — crater slam | Finds a flight sim |
+| **Luke Weems** | Greasy Luke | **FAST DRAW** — shotgun cone | Welds armor onto the van |
+| **Ryan Hagelstein** | Ryedawg | **QUASAR CANNON** — LAS-99 beam | Starts a story (it never ends) |
+| **Harrison Heger** | Turtle Man | **TURTLE SHELL** — soak & reflect | Spots game (point 45) |
+| **Michael Nixon** | Nix | **DEADLIFT SLAM** — hoist & slam | Audits the supplies |
 
-## Tech-demo roster (4 of 15+)
-| Survivor | Vibe | Plays like | Special |
-|----------|------|-----------|---------|
-| **Ryan** | Tall ex-baller, aviation obsessed | Fast, rapid-fire, fragile | **Hangtime Dash** — runway dash w/ i-frames |
-| **Jeff Hay** | Strong, Vikings + WWE | Tanky, slow, huge hits | **Skol Slam** — AoE body-slam + knockback |
-| **Bryce** | Obsessed Aggie, athletic | Balanced all-rounder | **Gig 'Em Rally** — 12th-Man damage/speed aura |
-| **Michael** | Dad-bod, legally Native American, *the creator* | **Cheat character** — invincible, infinite | **Admin Wipe** — vaporize every zombie on screen |
+## Adding fighters / events
+- **Fighters:** copy a block in the `ROSTER` array (stats, `special`, caricature `face`, `barks`, `joinLine`). New fighters are automatically recruitable on the road.
+- **Events:** add to the `EVENTS` array — `{id, title, text, choices:[{label, sub, act}]}`; use `req:()=>inParty('id')` for character-specific ones.
+- **Stops:** the `STOPS` array defines the route, gas costs, missions, and recruit points.
 
-## Adding more survivors (toward 15+)
-Open `index.html`, find the `CHARACTERS` array near the top of the `<script>`. Copy a block and edit:
-
-```js
-{
-  id:'newguy', name:'NAME', color:'#hex', role:'one-line description',
-  hp:110, speed:3.6, dmg:30, fireCD:15, range:310, bSpeed:10, pierce:0, knock:6, radius:15,
-  weapon:'balanced', bars:{Speed:.7,Power:.7,Health:.65},
-  special:{ name:'ABILITY', key:'rally', cd:480, dur:300, desc:'what it does' },
-  initials:'N',
-  // the caricature — mix and match to match the real person:
-  face:{ skin:'#e8b389', hair:'#5b3d27', hairStyle:'short',
-         beard:'#5b3d27', beardStyle:'stubble',   // 'none' | 'stubble' | 'full'
-         hat:null,                                  // null | 'cap-back' | 'headband'
-         hatColor:'#181818', hatColor2:'#c0392b',   // headband stripe (optional)
-         glasses:null,                              // null | 'aviator' | 'forehead'
-         shirt:'#54447a', cheeks:true },
-  barks:["funny line","another quip"],     // random trash talk while driving
-  rescueLine:"“said when you pick them up”",
-  downLine:"NAME got dropped. RIP."
-},
-```
-
-- `key` picks the special behavior: `dash`, `slam`, `rally`, or `nuke` (reuse an existing one, or add a new branch in `useSpecial()`).
-- `face` is drawn by `drawFace()` — add new hat/glasses styles by extending that function and its `drawCapBack` / `drawHeadband` / `drawAviators` helpers.
-- `bars` are just the cosmetic stat bars on the select card (0–1).
-- Cards, avatars, the in-game token, the crew roster, and the rescue/recruit flow all build
-  themselves from this array — no other edits needed. New survivors are automatically
-  rescuable on the road (see `rescueQueue` in `startGame`).
-
-## Roadmap ideas
-- The remaining 11+ survivors with their own traits
-- Pickups beyond medkits (better weapons, the van itself)
-- Boss horde at each city; a final stand at the lake
-- Co-op / pass-the-controller party mode
+## Roadmap
+- The rest of the 15+ roster as slides come in (Jeff, Bryce, Greene, Hunter, Zakk, Grayson…)
+- Perks/level-ups between stops, trading posts
+- 2-player same-screen co-op
+- More bosses and arena variety per city
