@@ -260,6 +260,26 @@ function resize(){ DPR=Math.min(window.devicePixelRatio||1,2);
 addEventListener('resize',resize); addEventListener('orientationchange',()=>setTimeout(resize,120));
 addEventListener('load',()=>{ resize(); requestAnimationFrame(resize); }); resize();
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+// roundRect polyfill (iOS < 16)
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ r=Math.min(r||0,w/2,h/2);
+    this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r); this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath(); return this; }; }
+// visible error toast — if something breaks on a phone we SEE it instead of a dead button
+addEventListener('error',ev=>{ try{ const d=document.createElement('div');
+  d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;background:#7a1010;color:#fff;font-size:11px;padding:7px 9px;border-radius:8px;z-index:999;pointer-events:none;font-family:monospace';
+  d.textContent='⚠ '+ev.message; document.body.appendChild(d); setTimeout(()=>d.remove(),8000); }catch(e){} });
+/* tapify: robust button activation — instant pointer-based taps (with drag slop),
+   falling back to click for anything that doesn't deliver pointer events. */
+window.__tapT=0;
+function tapify(el,fn){
+  let px=0,py=0,down=false,fired=0;
+  el.addEventListener('pointerdown',e=>{ px=e.clientX; py=e.clientY; down=true; });
+  el.addEventListener('pointerup',e=>{ if(!down)return; down=false;
+    if(Math.hypot(e.clientX-px,e.clientY-py)<14){ fired=performance.now(); window.__tapT=fired; fn(e); } });
+  el.addEventListener('click',e=>{ if(performance.now()-fired<600){ e.preventDefault(); return; } fn(e); });
+}
+// swallow trusted ghost clicks that follow a pointer-tap (prevents click-through after screen swaps)
+document.addEventListener('click',e=>{ if(e.isTrusted && performance.now()-window.__tapT<450){ e.stopPropagation(); e.preventDefault(); } },true);
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const irnd=(a,b)=>Math.floor(rnd(a,b+1));
 const hyp=(x,y)=>Math.hypot(x,y);
@@ -559,7 +579,7 @@ function showEvent(ev){
   const box=document.getElementById('evChoices'); box.innerHTML='';
   ev.choices.forEach(c=>{ const b=document.createElement('div'); b.className='evc';
     b.innerHTML=c.label+(c.sub?`<small>${c.sub}</small>`:'');
-    b.addEventListener('click',()=>{ audioInit(); const out=c.act(); run.food=Math.max(0,run.food); run.gas=Math.max(0,run.gas); showOutcome(ev.title,out); });
+    tapify(b,()=>{ audioInit(); const out=c.act(); run.food=Math.max(0,run.food); run.gas=Math.max(0,run.gas); showOutcome(ev.title,out); });
     box.appendChild(b); });
 }
 function showOutcome(title,text){
@@ -567,7 +587,7 @@ function showOutcome(title,text){
   document.getElementById('evText').textContent=text;
   const box=document.getElementById('evChoices'); box.innerHTML='';
   const b=document.createElement('div'); b.className='evc'; b.innerHTML='Continue ▶';
-  b.addEventListener('click',()=>{ document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
+  tapify(b,()=>{ document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
   box.appendChild(b); SFX.good();
 }
 function showRecruit(){
@@ -580,14 +600,14 @@ function showRecruit(){
     document.getElementById('evText').textContent=ch.joinLine+' But the van seats four and Ryedawg\'s cooler has a seat of its own. '+ch.name+' donates supplies and promises to catch up.';
     const box=document.getElementById('evChoices'); box.innerHTML='';
     const b=document.createElement('div'); b.className='evc'; b.innerHTML='Take the supplies (+5 food, +4 gas) ▶';
-    b.addEventListener('click',()=>{ run.food+=5; run.gas+=4; document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
+    tapify(b,()=>{ run.food+=5; run.gas+=4; document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
     box.appendChild(b); return;
   }
   document.getElementById('evTitle').textContent=ch.name+' JOINS THE CREW';
   document.getElementById('evText').textContent=ch.joinLine+' — '+ch.nick+' climbs in. Special: '+ch.special.name+'.';
   const box=document.getElementById('evChoices'); box.innerHTML='';
   const b=document.createElement('div'); b.className='evc'; b.innerHTML='Welcome aboard ▶';
-  b.addEventListener('click',()=>{ run.party.push(mkMember(ch)); SFX.good(); document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
+  tapify(b,()=>{ run.party.push(mkMember(ch)); SFX.good(); document.getElementById('eventModal').classList.add('hidden'); nextStep(); });
   box.appendChild(b);
 }
 
@@ -1037,7 +1057,7 @@ function buildCards(){
     card.innerHTML=`<div class="picktag"></div><canvas class="avatar" width="120" height="120"></canvas><h3>${c.name}</h3><div class="nick">“${c.nick}”</div>
       <div class="stats">${stat('Pow',Math.min(1,c.atk/20))}${stat('Spd',Math.min(1,c.speed/4.2))}${stat('HP',Math.min(1,c.hp/165))}</div>
       <div class="sp"><b>${c.special.name}</b><br>${c.special.desc}</div>`;
-    card.addEventListener('click',()=>{ audioInit(); tapCard(c.id); });
+    tapify(card,()=>{ audioInit(); tapCard(c.id); });
     wrap.appendChild(card);
     const g=card.querySelector('.avatar').getContext('2d'); g.scale(2,2); g.fillStyle='#0e120e'; g.beginPath(); g.arc(30,30,29,0,6.28); g.fill();
     drawFace(g,30,32,24,c.face,false); g.strokeStyle=c.color; g.lineWidth=3; g.beginPath(); g.arc(30,30,28,0,6.28); g.stroke(); });
@@ -1063,17 +1083,18 @@ function refreshCardSel(){
 /* ================= LOOP & WIRING ================= */
 function loop(){ try{ update(); draw(); }catch(e){ console.error('loop',e); } requestAnimationFrame(loop); }
 loop();
-document.getElementById('toSelect').addEventListener('click',()=>{ audioInit(); leadId=null; budId=null; buildCards(); hideScreens(); document.getElementById('select').classList.remove('hidden'); });
-document.getElementById('backTitle').addEventListener('click',()=>{ hideScreens(); document.getElementById('title').classList.remove('hidden'); });
-document.getElementById('startRunBtn').addEventListener('click',()=>{ if(!leadId)return; newRun(); showMap(); });
-document.getElementById('btnDrive').addEventListener('click',driveWest);
-document.getElementById('btnMed').addEventListener('click',useMedkit);
-document.getElementById('btnResume').addEventListener('click',()=>{ hideScreens();
+function gotoSelect(){ audioInit(); leadId=null; budId=null; buildCards(); hideScreens(); document.getElementById('select').classList.remove('hidden'); }
+tapify(document.getElementById('toSelect'),gotoSelect);
+tapify(document.getElementById('backTitle'),()=>{ hideScreens(); document.getElementById('title').classList.remove('hidden'); });
+tapify(document.getElementById('startRunBtn'),()=>{ if(!leadId)return; audioInit(); newRun(); showMap(); });
+tapify(document.getElementById('btnDrive'),driveWest);
+tapify(document.getElementById('btnMed'),useMedkit);
+tapify(document.getElementById('btnResume'),()=>{ hideScreens();
   if(run.stopIdx===STOPS.length-1 && flow.length===0){ winGame(); return; } nextStep(); });
-document.getElementById('retry').addEventListener('click',()=>{ newRun(); showMap(); });
-document.getElementById('overSelect').addEventListener('click',()=>{ leadId=null; budId=null; buildCards(); hideScreens(); document.getElementById('select').classList.remove('hidden'); });
-document.getElementById('winAgain').addEventListener('click',()=>{ newRun(); showMap(); });
-document.getElementById('winSelect').addEventListener('click',()=>{ leadId=null; budId=null; buildCards(); hideScreens(); document.getElementById('select').classList.remove('hidden'); });
+tapify(document.getElementById('retry'),()=>{ newRun(); showMap(); });
+tapify(document.getElementById('overSelect'),gotoSelect);
+tapify(document.getElementById('winAgain'),()=>{ newRun(); showMap(); });
+tapify(document.getElementById('winSelect'),gotoSelect);
 ['contextmenu','gesturestart'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
 document.addEventListener('dblclick',e=>e.preventDefault());
 hideScreens(); document.getElementById('title').classList.remove('hidden');
